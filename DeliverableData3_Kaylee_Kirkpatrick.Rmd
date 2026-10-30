@@ -42,3 +42,11 @@ colSums(is.na(spotify_df))
 numeric_spotify <- spotify_df %>% select(where(is.numeric))
 cor_matrix <- cor(numeric_spotify, use = "complete.obs")
 print(round(cor_matrix, 2))
+
+---
+
+## 5. Discussion
+
+The initial data preprocessing phase provides valuable insights into the structure of our Spotify dataset. The distribution of track popularity confirms that while most songs cluster around moderate streaming numbers, a subset achieves high hit status, aligning with our objectives.
+
+Looking ahead, our next steps will focus on feature engineering and exploratory data analysis. We plan to construct our binary target variable and use correlation heatmaps to investigate which audio characteristics exert the strongest influence on commercial success.

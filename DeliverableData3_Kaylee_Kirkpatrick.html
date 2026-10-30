@@ -1528,6 +1528,19 @@ Scores”, x = “Popularity Score”, y = “Count”)</p>
 <p>numeric_spotify &lt;- spotify_df %&gt;% select(where(is.numeric))
 cor_matrix &lt;- cor(numeric_spotify, use = “complete.obs”)
 print(round(cor_matrix, 2))</p>
+<hr />
+<div id="discussion" class="section level2">
+<h2>5. Discussion</h2>
+<p>The initial data preprocessing phase provides valuable insights into
+the structure of our Spotify dataset. The distribution of track
+popularity confirms that while most songs cluster around moderate
+streaming numbers, a subset achieves high hit status, aligning with our
+objectives.</p>
+<p>Looking ahead, our next steps will focus on feature engineering and
+exploratory data analysis. We plan to construct our binary target
+variable and use correlation heatmaps to investigate which audio
+characteristics exert the strongest influence on commercial success.</p>
+</div>
 </div>
 
 
