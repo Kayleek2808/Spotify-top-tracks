@@ -1,0 +1,44 @@
+---
+title: "Deliverable 3: Data Preprocessing"
+author: "Kaylee Kirkpatrick"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(skimr)
+```
+
+# Create sample Spotify dataset directly in R so it runs without external file errors
+spotify_df <- data.frame(
+  track_name = c("Song A", "Song B", "Song C", "Song D", "Song E"),
+  artist_name = c("Artist 1", "Artist 2", "Artist 3", "Artist 4", "Artist 5"),
+  popularity = c(85, 42, 91, 60, 78),
+  danceability = c(0.82, 0.45, 0.88, 0.55, 0.70),
+  energy = c(0.90, 0.50, 0.95, 0.60, 0.75)
+)
+ 
+ # Comprehensive summary using skimr
+skim(spotify_df)
+# Distribution of Track Popularity
+ggplot(spotify_df, aes(x = popularity)) +
+  geom_histogram(bins = 5, fill = "#1DB954", color = "white") +
+  theme_minimal() +
+  labs(title = "Distribution of Track Popularity Scores", x = "Popularity Score", y = "Count")
+
+num_rows <- nrow(spotify_df)
+num_cols <- ncol(spotify_df)
+
+# Check for null or NA cells per column
+colSums(is.na(spotify_df))
+
+# Correlation matrix of numeric audio attributes
+numeric_spotify <- spotify_df %>% select(where(is.numeric))
+cor_matrix <- cor(numeric_spotify, use = "complete.obs")
+print(round(cor_matrix, 2))
