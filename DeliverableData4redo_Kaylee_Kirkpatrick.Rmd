@@ -1,0 +1,129 @@
+---
+title: "Deliverable 3: Data Preprocessing"
+author: "Kaylee Kirkpatrick"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(skimr)
+```
+#Changes Since Deliverable 3
+ 
+* **Updated Data Dictionary & Cleanliness:** Refined variable descriptions and verified missing values.
+ * **Added Exploratory Data Visualizations:** Implemented four distinct ggplot2 charts.
+```{r create-data}
+spotify_us_songs <- read.csv("spotify_us_songs.csv")
+spotify_df <- spotify_us_songs
+
+```
+
+### 1. The Distribution of One Variable (Histogram)
+```{r viz-histogram}
+spotify_df <- spotify_us_songs
+library(dplyr)
+library(ggplot2)
+
+
+
+# Calculate average popularity per artist and get the top 25
+top_artists <- spotify_df %>%
+  group_by(artists) %>%
+  summarise(avg_popularity = mean(popularity, na.rm = TRUE)) %>%
+  arrange(desc(avg_popularity)) %>%
+  slice_head(n = 25)
+
+# Create the horizontal bar plot
+ggplot(top_artists, aes(x = avg_popularity, y = reorder(artists, avg_popularity))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 25 Artists by Average Popularity",
+    x = "Average Popularity Score",
+    y = "Artist"
+  )
+```
+
+
+num_rows <- nrow(spotify_df)
+num_cols <- ncol(spotify_df)
+
+# Check for null or NA cells per column
+colSums(is.na(spotify_df))
+
+# Correlation matrix of numeric audio attributes
+numeric_spotify <- spotify_df %>% select(where(is.numeric))
+cor_matrix <- cor(numeric_spotify, use = "complete.obs")
+print(round(cor_matrix, 2))
+
+---
+### 2. A Comparison Across Groups (Box Plot)
+```{r viz-boxplot}
+spotify_df <- spotify_us_songs
+
+ggplot(spotify_df, aes(x = energy, y = danceability)) +
+  geom_point(alpha = 0.5, color = "#1DB954") +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Danceability vs. Energy",
+    x = "Energy Score",
+    y = "Danceability Score"
+  )
+```
+```{r viz-scatterplot}
+library(dplyr)
+library(ggplot2)
+
+spotify_df <- spotify_us_songs
+
+# Get the top 25 songs by popularity
+top_songs <- spotify_df %>%
+  arrange(desc(popularity)) %>%
+  slice_head(n = 30)
+
+# Create a horizontal bar chart
+ggplot(top_songs, aes(x = popularity, y = reorder(name, popularity))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 30 Songs\nby by Popularity",
+    x = "Popularity Score",
+    y = "Song Name"
+  )
+```
+```{r viz-scatterplot-2}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+spotify_df <- spotify_us_songs
+
+# Get the top 25 songs with the highest positive weekly movement
+top_weekly <- spotify_df %>%
+  arrange(desc(weekly_movement)) %>%
+  slice_head(n = 25) %>%
+  mutate(short_name = str_trunc(name, 30))
+
+# Create a horizontal bar chart
+ggplot(top_weekly, aes(x = weekly_movement, y = reorder(short_name, weekly_movement))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 25 Songs by Weekly Movement",
+    x = "Weekly Movement (Positions Gained)",
+    y = "Song Name"
+  )
+
+```
+
+
+## 5. Discussion
+Through the exploratory data analysis of the Spotify dataset, I learned how crucial clean variable structuring and consistent aesthetic palettes (ggplot2) are for communicating insights clearly. I was surprised by how cleanly the linear relationship between energy and danceability appeared even in a small sample.
+Moving forward into the draft stage, open questions remain regarding whether these audio features stay consistent across different markets or time periods. To prepare my final project draft, I plan to expand the dataset sample size, run correlation tests, and model which attributes most reliably predict track success
