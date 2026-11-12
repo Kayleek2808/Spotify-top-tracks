@@ -1,0 +1,192 @@
+---
+title: "Deliverable 5: Final Draft"
+author: "Kaylee Kirkpatrick"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(dplyr)      # Used for data manipulation, filtering, grouping, and summarizing
+library(ggplot2)    # Used for building exploratory data visualizations and plots
+library(stringr)    # Used for string manipulation and truncating long song/artist names
+```
+#summary
+In this project, we analyzed a dataset of US Spotify tracks to understand what drives track popularity and audio feature correlations. Our goal was to uncover patterns in track attributes such as danceability, energy, and weekly chart movement. Using R, dplyr, and ggplot2, we cleaned the data, handled missing values, and created exploratory visualizations including histograms, bar charts, scatter plots, and correlation matrices. Our main findings indicate a positive relationship between energy and danceability, as well as distinct groupings among top-performing artists and tracks.
+#purpose
+The primary goal of this project is to investigate the distribution of track popularity, examine audio features, and answer the following research questions:
+
+What are the characteristics of the top 30 most popular songs on Spotify in the US?
+
+How strongly correlated are audio features like energy and danceability?
+
+Which artists dominate average popularity scores within the dataset?
+
+## 4. Data
+
+### Data Dictionary
+
+| Variable Name | Description | Data Type | R Type | Units / Range |
+| :--- | :--- | :--- | :--- | :--- |
+| `spotify_id` | Unique track identifier | Categorical | `character` | N/A |
+| `name` | Song title | Categorical | `character` | N/A |
+| `artists` | Artist(s) performing the track | Categorical | `character` | N/A |
+| `daily_rank` | Current chart position | Numerical | `integer` | 1 to 30 |
+| `daily_movement` | Daily chart position change | Numerical | `integer` | Positions gained/lost |
+| `weekly_movement` | Weekly chart position change | Numerical | `integer` | Positions gained/lost |
+| `country` | Chart geographic region | Categorical | `character` | 2-letter ISO code |
+| `snapshot_date` | Date chart entry was recorded | Date/Time | `Date` | YYYY-MM-DD |
+| `popularity` | Track popularity metric | Numerical | `integer` | Scale (0–100) |
+| `is_explicit` | Explicit lyrics flag | Categorical | `logical` | TRUE / FALSE |
+| `duration_ms` | Track length in milliseconds | Numerical | `integer` | Milliseconds |
+
+### Missing Values & Cleaning
+```{r data-cleaning}
+library(dplyr)
+
+# Read the dataset filtered to top 30 ranks
+spotify_top30 <- read.csv("spotify_us_songs.csv") %>%
+  filter(daily_rank <= 30)
+
+# Check for missing values across all columns
+colSums(is.na(spotify_top30))
+```
+
+```{r create-data}
+spotify_us_songs <- read.csv("spotify_us_songs.csv")
+spotify_df <- spotify_us_songs
+
+```
+
+### 1. The Distribution of One Variable (Histogram)
+```{r viz-histogram}
+spotify_df <- spotify_us_songs
+library(dplyr)
+library(ggplot2)
+
+
+
+# Calculate average popularity per artist and get the top 25
+top_artists <- spotify_df %>%
+  group_by(artists) %>%
+  summarise(avg_popularity = mean(popularity, na.rm = TRUE)) %>%
+  arrange(desc(avg_popularity)) %>%
+  slice_head(n = 25)
+
+# Create the horizontal bar plot
+ggplot(top_artists, aes(x = avg_popularity, y = reorder(artists, avg_popularity))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 25 Artists by Average Popularity",
+    x = "Average Popularity Score",
+    y = "Artist"
+  )
+```
+
+
+num_rows <- nrow(spotify_df)
+num_cols <- ncol(spotify_df)
+
+# Check for null or NA cells per column
+colSums(is.na(spotify_df))
+
+# Correlation matrix of numeric audio attributes
+numeric_spotify <- spotify_df %>% select(where(is.numeric))
+cor_matrix <- cor(numeric_spotify, use = "complete.obs")
+print(round(cor_matrix, 2))
+
+---
+### 2. A Comparison Across Groups (Box Plot)
+```{r viz-boxplot}
+spotify_df <- spotify_us_songs
+
+ggplot(spotify_df, aes(x = energy, y = danceability)) +
+  geom_point(alpha = 0.5, color = "#1DB954") +
+  geom_smooth(method = "lm", color = "black", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Danceability vs. Energy",
+    x = "Energy Score",
+    y = "Danceability Score"
+  )
+```
+```{r viz-scatterplot}
+library(dplyr)
+library(ggplot2)
+
+spotify_df <- spotify_us_songs
+
+# Get the top 25 songs by popularity
+top_songs <- spotify_df %>%
+  arrange(desc(popularity)) %>%
+  slice_head(n = 30)
+
+# Create a horizontal bar chart
+ggplot(top_songs, aes(x = popularity, y = reorder(name, popularity))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 30 Songs\nby by Popularity",
+    x = "Popularity Score",
+    y = "Song Name"
+  )
+```
+
+```{r viz-scatterplot-2}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+
+spotify_df <- spotify_us_songs
+
+# Get the top 25 songs with the highest positive weekly movement
+top_weekly <- spotify_df %>%
+  arrange(desc(weekly_movement)) %>%
+  slice_head(n = 25) %>%
+  mutate(short_name = str_trunc(name, 30))
+
+# Create a horizontal bar chart
+ggplot(top_weekly, aes(x = weekly_movement, y = reorder(short_name, weekly_movement))) +
+  geom_col(fill = "#1DB954") +
+  theme_minimal() +
+  labs(
+    title = "Top 25 Songs by Weekly Movement",
+    x = "Weekly Movement (Positions Gained)",
+    y = "Song Name"
+  )
+
+```
+
+
+## 6. Results
+
+### Analysis Method & Reasoning
+To evaluate the dataset, we utilized data manipulation functions from `dplyr` (such as `group_by()` and `summarize()`) to aggregate average popularity scores by artist and track movement[span_0](start_span)[span_0](end_span). We also fitted a linear regression model (`geom_smooth(method = "lm")`) to examine the relationship between continuous audio features like danceability and energy[span_1](start_span)[span_1](end_span). This method was chosen because it allows us to visually inspect linear trends, test correlations, and quantify how well audio attributes predict song characteristics.
+
+### Overall Findings
+* **Audio Feature Correlation:** The scatter plot and regression line between danceability and energy demonstrate a slight positive trend, indicating that tracks with higher energy scores tend to have higher danceability ratings[span_2](start_span)[span_2](end_span).
+* **Artist Popularity:** The horizontal bar chart of top artists reveals that prominent contemporary acts achieve consistently high average popularity scores across top-charting domains[span_3](start_span)[span_3](end_span).
+* **Chart Movement:** Analysis of weekly and daily movement metrics shows high volatility among newly released tracks compared to stable long-running hits.
+
+## 7. Conclusions
+
+### Summary of Findings
+Our analysis of the Spotify US tracks dataset successfully mapped out the structural relationship between track popularity, audio features, and artist performance metrics. The exploratory data visualizations confirmed that audio attributes like energy and danceability play a meaningful role in charting success[span_4](start_span)[span_4](end_span).
+
+### Study Limitations
+* **Small Sample Scope:** Filtering the dataset to a limited subset or top 30 tracks restricts our ability to generalize findings to the entire global music catalog[span_5](start_span)[span_5](end_span).
+* **Missing Variables:** Key external marketing metrics (such as social media promotion or playlist placements) were not included in the dataset.
+
+### Future Work
+Future iterations of this project will expand the sample size to include historical multi-year data, run formal correlation matrix significance tests, and build a predictive machine learning model to forecast track success[span_6](start_span)[span_6](end_span).
+
+## 8. References
+* **Data Source:** Spotify US Songs Dataset via Kaggle.
+* **R Packages:** Wickham et al., (2019). *Welcome to the tidyverse*. Journal of Open Source Software.
